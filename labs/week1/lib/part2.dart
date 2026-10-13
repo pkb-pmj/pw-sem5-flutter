@@ -19,4 +19,23 @@ void part2() {
   for (final (i, val) in unique.indexed) {
     print('$i, $val, ${val.isEven ? 'even' : 'odd'}');
   }
+
+  final set = {
+    'Warszawa',
+    'Białystok',
+    'Lublin',
+    'Gdańsk',
+    'Elbląg',
+    'Wrocław',
+  };
+  final map = {for (final key in set) key: key.length};
+  print(map);
+  final map2 = <String, List<String>>{};
+  for (final key in set) {
+    if (!map2.containsKey(key[0])) {
+      map2[key[0]] = [];
+    }
+    map2[key[0]]!.add(key);
+  }
+  print(map2);
 }
