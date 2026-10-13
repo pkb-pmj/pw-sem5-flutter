@@ -1,7 +1,5 @@
 import 'dart:math';
 
-import 'package:collection/collection.dart';
-
 void part2() {
   print('\n=== Part 2: Collections & loops ===');
   final random = Random();
