@@ -1,67 +1,57 @@
 void part3() {
   print('\n=== Part 3: OOP ===');
 
-  final animals = [
-    Dog('Rex', age: 3, color: 'brown'),
-    Cat('Mr. Clinton', age: 15, color: 'white'),
-    Cow('Betsy', age: 5, weight: 500),
+  const animals = [
+    Dog('Buddy', age: 3, color: 'brown'),
+    Cat('Whiskers', age: 2, color: 'white'),
+    Cow('MooMoo', age: 5, weight: 500),
   ];
 
   for (final animal in animals) {
     print(animal.description);
     animal.makeSound();
-
-    switch (animal) {
-      case Dog():
-        print(
-          'Dog("${animal.name}", age: ${animal.age}, color: ${animal.color})',
-        );
-      case Cat():
-        print(
-          'Cat("${animal.name}", age: ${animal.age}, color: ${animal.color})',
-        );
-      case Cow():
-        print(
-          'Cow("${animal.name}", age: ${animal.age}, weight: ${animal.weight})',
-        );
-    }
+    print(switch (animal) {
+      Dog(:final color) || Cat(:final color) => 'Color: $color',
+      Cow(:final weight) => 'Weight: $weight',
+    });
   }
 }
 
-sealed class Animal(final String name, {required final int age}) {
-  String get description => 'name: $name, age: $age';
+sealed class const Animal(final String name, {required final int age}) {
+  String get description;
+
   void makeSound();
 }
 
-class Dog(super.name, {required super.age, required final String color})
+class const Dog(super.name, {required super.age, required final String color})
     extends Animal {
   @override
-  String get description => '${super.description}, color: $color';
+  String get description => 'A $color dog named $name';
 
   @override
   void makeSound() {
-    print('woof');
+    print('Woof woof');
   }
 }
 
-class Cat(super.name, {required super.age, required final String color})
+class const Cat(super.name, {required super.age, required final String color})
     extends Animal {
   @override
-  String get description => '${super.description}, color: $color';
+  String get description => 'A $color cat named $name';
 
   @override
   void makeSound() {
-    print('meow');
+    print('Meow');
   }
 }
 
-class Cow(super.name, {required super.age, required final int weight})
+class const Cow(super.name, {required super.age, required final int weight})
     extends Animal {
   @override
-  String get description => '${super.description}, weight: $weight';
+  String get description => 'A cow named $name weighing $weight kg';
 
   @override
   void makeSound() {
-    print('moo');
+    print('Moo');
   }
 }

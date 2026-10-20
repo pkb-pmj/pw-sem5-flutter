@@ -1,41 +1,46 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
+
 void part2() {
   print('\n=== Part 2: Collections & loops ===');
-  final random = Random();
-  final randomList = <int>[];
-  for (var i = 0; i < 30; i++) {
-    final val = random.nextInt(20);
-    randomList.add(val);
+
+  final ints = List.generate(30, (_) => Random().nextInt(21));
+  print(ints);
+
+  final sorted = ints.sorted((a, b) => b.compareTo(a));
+  print(sorted);
+
+  final filtered = sorted.where((element) => element % 3 == 0);
+  print(filtered);
+
+  final unique = filtered.toSet();
+  print(unique);
+
+  for (final (index, value) in unique.indexed) {
+    print('$index\t$value is even: ${value.isEven}');
   }
-  print(randomList);
 
-  randomList.sort((a, b) => b.compareTo(a));
-  print(randomList);
+  final strings = [
+    'one',
+    'two',
+    'three',
+    'four',
+    'five',
+    'six',
+    'seven',
+    'eight',
+    'nine',
+    'ten',
+  ];
+  print(strings);
 
-  print(randomList.where((x) => (x % 3) == 0).toSet());
+  final withLengths = {for (final string in strings) string: string.length};
+  print(withLengths);
 
-  final unique = randomList.where((x) => (x % 3) == 0).toSet();
-  for (final (i, val) in unique.indexed) {
-    print('$i, $val, ${val.isEven ? 'even' : 'odd'}');
-  }
+  final grouped1 = strings.groupListsBy((e) => e[0]);
+  print(grouped1);
 
-  final set = {
-    'Warszawa',
-    'Białystok',
-    'Lublin',
-    'Gdańsk',
-    'Elbląg',
-    'Wrocław',
-  };
-  final map = {for (final key in set) key: key.length};
-  print(map);
-  final map2 = <String, List<String>>{};
-  for (final key in set) {
-    if (!map2.containsKey(key[0])) {
-      map2[key[0]] = [];
-    }
-    map2[key[0]]!.add(key);
-  }
-  print(map2);
+  final grouped2 = groupBy(strings, (e) => e[0]);
+  print(grouped2);
 }
