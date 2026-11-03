@@ -1,6 +1,8 @@
-// Stubs stay async so the signatures match the final solution.
-// ignore_for_file: unnecessary_async
+import 'dart:isolate';
+import 'dart:math';
 
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:labs_week5/pokemon.dart';
 
 Future<Pokemon> loadPokemonSlow() async {
@@ -9,15 +11,27 @@ Future<Pokemon> loadPokemonSlow() async {
   // - Pick a random entry from the list
   // - Fetch the selected pokémon from its entry's url.
   // - Parse the response using Pokemon.fromJson and return it.
-  throw UnimplementedError();
+  final dio = Dio();
+  final response1 = await dio.get<Map<String, dynamic>>(
+    'https://pokeapi.co/api/v2/pokemon?limit=100',
+  );
+  final pokemons = Pokemons.fromJson(response1.data!);
+
+  final pokemon = pokemons.pokemons[Random().nextInt(pokemons.pokemons.length)];
+
+  final response2 = await dio.get<Map<String, dynamic>>(pokemon.url);
+  return Pokemon.fromJson(response2.data!);
 }
 
 Future<Pokemon> loadPokemonFastAndEasy() async {
-  // Now, do the same but make it so that the spinner does not hang
-  throw UnimplementedError();
+  return await compute((_) => loadPokemonSlow(), null);
 }
 
 Future<Pokemon> loadPokemonFastAndComplex() async {
-  // And now, make the same thing as in `loadPokemonFastAndEasy` but with raw Isolates
-  throw UnimplementedError();
+  final controlPort = ReceivePort();
+  await Isolate.spawn(
+    (sendPort) async => sendPort.send(await loadPokemonSlow()),
+    controlPort.sendPort,
+  );
+  return await controlPort.asBroadcastStream().first as Pokemon;
 }

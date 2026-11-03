@@ -5,25 +5,32 @@ import 'package:intl/intl.dart';
 import 'package:labs_week4/common_widgets.dart';
 
 class const BookScreen({super.key, required final String bookId})
-    extends StatelessWidget {
+    extends StatefulWidget {
+  @override
+  State<BookScreen> createState() => _BookScreenState();
+}
+
+class _BookScreenState extends State<BookScreen> {
+  bool collapsed = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: switch (Bookstore.getBook(id: bookId)) {
+      body: switch (Bookstore.getBook(id: widget.bookId)) {
         final book? => LayoutBuilder(
           builder: (context, constraints) => switch (constraints.maxWidth) {
-            < 600 => _BookDetailsNarrow(book),
-            _ => _BookDetailsWide(book),
+            < 600 => _BookDetailsNarrow(book, collapsed),
+            _ => _BookDetailsWide(book, collapsed),
           },
         ),
-        null => Center(child: Text('Book with id $bookId not found')),
+        null => Center(child: Text('Book with id ${widget.bookId} not found')),
       },
     );
   }
 }
 
-class const _BookDetailsNarrow(final Book book) extends StatelessWidget {
+class const _BookDetailsNarrow(final Book book, final bool collapsed) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -39,13 +46,13 @@ class const _BookDetailsNarrow(final Book book) extends StatelessWidget {
         const SizedBox(height: 26),
         _Published(book.publishDate),
         const SizedBox(height: 32),
-        _Description(book.description),
+        _Description(book.description, collapsed),
       ],
     );
   }
 }
 
-class const _BookDetailsWide(final Book book) extends StatelessWidget {
+class const _BookDetailsWide(final Book book, final bool collapsed) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -71,7 +78,10 @@ class const _BookDetailsWide(final Book book) extends StatelessWidget {
               const SizedBox(height: 26),
               _Published(book.publishDate),
               const SizedBox(height: 32),
-              _Description(book.description),
+              _Description(
+                book.description,
+                key: ValueKey('${book.id}_description'),
+              ),
             ],
           ),
         ),
@@ -154,7 +164,7 @@ class const _Published(final DateTime publishDate) extends StatelessWidget {
   }
 }
 
-class const _Description(final String description) extends StatelessWidget {
+class const _Description(final String description, final bool collapsed, final ) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -174,19 +184,29 @@ class const _Description(final String description) extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            IconButton(
+              onPressed: () => setState(() => collapsed = !collapsed),
+              icon: Icon(
+                collapsed
+                    ? Icons.arrow_drop_up_outlined
+                    : Icons.arrow_drop_down_outlined,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsetsDirectional.only(start: 32),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: Text(
-              description,
-              style: theme.textTheme.bodyLarge,
-              textAlign: TextAlign.justify,
-            ),
-          ),
+          child: collapsed
+              ? null
+              : ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Text(
+                    description,
+                    style: theme.textTheme.bodyLarge,
+                    textAlign: TextAlign.justify,
+                  ),
+                ),
         ),
       ],
     );
