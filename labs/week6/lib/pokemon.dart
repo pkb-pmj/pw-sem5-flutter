@@ -21,6 +21,12 @@ class const Pokemons({
   @JsonKey(name: 'results') required final List<PokemonEntry> pokemons,
   required final int count,
 }) with Equatable {
+  factory fromJson(Map<String, dynamic> json) => _$PokemonsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$PokemonsToJson(this);
+
+  static const jsonSchema = _$PokemonsJsonSchema;
+
   @override
   List<Object?> get props => [pokemons, count];
 }
@@ -30,6 +36,12 @@ class const PokemonEntry({
   required final String name,
   required final String url,
 }) with Equatable {
+  factory fromJson(Map<String, dynamic> json) => _$PokemonEntryFromJson(json);
+
+  Map<String, dynamic> toJson() => _$PokemonEntryToJson(this);
+
+  static const jsonSchema = _$PokemonEntryJsonSchema;
+
   @override
   List<Object?> get props => [name, url];
 }
@@ -42,6 +54,12 @@ class const Pokemon({
   required final int height,
   required final int weight,
 }) with Equatable {
+  factory fromJson(Map<String, dynamic> json) => _$PokemonFromJson(json);
+
+  Map<String, dynamic> toJson() => _$PokemonToJson(this);
+
+  static const jsonSchema = _$PokemonJsonSchema;
+
   @override
   List<Object?> get props => [id, name, baseExperience, height, weight];
 }
