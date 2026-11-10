@@ -2,7 +2,10 @@ import 'package:bookstore_data/bookstore_data.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:labs_week4/app_theme.dart';
 import 'package:labs_week4/common_widgets.dart';
+import 'package:labs_week4/favorite_books.dart';
+import 'package:provider/provider.dart';
 
 class const BookScreen({super.key, required final String bookId})
     extends StatefulWidget {
@@ -10,18 +13,37 @@ class const BookScreen({super.key, required final String bookId})
   State<BookScreen> createState() => _BookScreenState();
 }
 
-class _BookScreenState extends State<BookScreen> {
-  bool collapsed = false;
+class _BookScreenState() extends State<BookScreen> {
+  var _descriptionExpanded = true;
 
   @override
   Widget build(BuildContext context) {
+    final book = Bookstore.getBook(id: widget.bookId);
+
     return Scaffold(
-      appBar: AppBar(),
-      body: switch (Bookstore.getBook(id: widget.bookId)) {
+      appBar: AppBar(
+        actions: [
+          if (book != null) BookFavoriteButton(book: book),
+          const AppThemeSwitcher(),
+        ],
+      ),
+      body: switch (book) {
         final book? => LayoutBuilder(
           builder: (context, constraints) => switch (constraints.maxWidth) {
-            < 600 => _BookDetailsNarrow(book, collapsed),
-            _ => _BookDetailsWide(book, collapsed),
+            < 600 => _BookDetailsNarrow(
+              book,
+              descriptionExpanded: _descriptionExpanded,
+              onToggleDescriptionExpanded: () {
+                setState(() => _descriptionExpanded = !_descriptionExpanded);
+              },
+            ),
+            _ => _BookDetailsWide(
+              book,
+              descriptionExpanded: _descriptionExpanded,
+              onToggleDescriptionExpanded: () {
+                setState(() => _descriptionExpanded = !_descriptionExpanded);
+              },
+            ),
           },
         ),
         null => Center(child: Text('Book with id ${widget.bookId} not found')),
@@ -30,7 +52,11 @@ class _BookScreenState extends State<BookScreen> {
   }
 }
 
-class const _BookDetailsNarrow(final Book book, final bool collapsed) extends StatelessWidget {
+class const _BookDetailsNarrow(
+  final Book book, {
+  required final bool descriptionExpanded,
+  required final VoidCallback onToggleDescriptionExpanded,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -45,14 +71,22 @@ class const _BookDetailsNarrow(final Book book, final bool collapsed) extends St
         _Genre(book.genre),
         const SizedBox(height: 26),
         _Published(book.publishDate),
-        const SizedBox(height: 32),
-        _Description(book.description, collapsed),
+        const SizedBox(height: 26),
+        _Description(
+          book,
+          expanded: descriptionExpanded,
+          onToggleExpanded: onToggleDescriptionExpanded,
+        ),
       ],
     );
   }
 }
 
-class const _BookDetailsWide(final Book book, final bool collapsed) extends StatelessWidget {
+class const _BookDetailsWide(
+  final Book book, {
+  required final bool descriptionExpanded,
+  required final VoidCallback onToggleDescriptionExpanded,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -77,10 +111,11 @@ class const _BookDetailsWide(final Book book, final bool collapsed) extends Stat
               _Genre(book.genre),
               const SizedBox(height: 26),
               _Published(book.publishDate),
-              const SizedBox(height: 32),
+              const SizedBox(height: 26),
               _Description(
-                book.description,
-                key: ValueKey('${book.id}_description'),
+                book,
+                expanded: descriptionExpanded,
+                onToggleExpanded: onToggleDescriptionExpanded,
               ),
             ],
           ),
@@ -164,7 +199,15 @@ class const _Published(final DateTime publishDate) extends StatelessWidget {
   }
 }
 
-class const _Description(final String description, final bool collapsed, final ) extends StatelessWidget {
+// The key is built from book.id at runtime, so the constructor cannot be const.
+// ignore: prefer_const_constructors_in_immutables
+class _Description(
+  final Book book, {
+  required final bool expanded,
+  required final VoidCallback onToggleExpanded,
+}) extends StatelessWidget {
+  this : super(key: PageStorageKey(book.id));
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -176,7 +219,7 @@ class const _Description(final String description, final bool collapsed, final )
           children: [
             Icon(Icons.description_rounded, color: theme.colorScheme.onSurface),
             const SizedBox(width: 8),
-            Expanded(
+            Flexible(
               child: Text(
                 'Description',
                 style: theme.textTheme.titleLarge,
@@ -185,30 +228,52 @@ class const _Description(final String description, final bool collapsed, final )
               ),
             ),
             IconButton(
-              onPressed: () => setState(() => collapsed = !collapsed),
-              icon: Icon(
-                collapsed
-                    ? Icons.arrow_drop_up_outlined
-                    : Icons.arrow_drop_down_outlined,
+              icon: AnimatedRotation(
+                turns: expanded ? -0.25 : 0.25,
+                duration: Durations.long1,
+                curve: Curves.easeInOutCubicEmphasized,
+                child: const Icon(Icons.chevron_right_rounded),
               ),
+              onPressed: onToggleExpanded,
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsetsDirectional.only(start: 32),
-          child: collapsed
-              ? null
-              : ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: Text(
-                    description,
-                    style: theme.textTheme.bodyLarge,
-                    textAlign: TextAlign.justify,
-                  ),
-                ),
-        ),
+        if (expanded) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Text(
+                book.description,
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.justify,
+              ),
+            ),
+          ),
+        ],
       ],
+    );
+  }
+}
+
+class const BookFavoriteButton({super.key, required final Book book})
+    extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final favoriteBooks = context.watch<FavoriteBooks>();
+    final isFavorite = favoriteBooks.value.contains(book.id);
+
+    return IconButton(
+      onPressed: isFavorite
+          ? () => favoriteBooks.removeBook(book)
+          : () => favoriteBooks.addBook(book),
+      icon: Icon(
+        isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+        color: isFavorite ? theme.colorScheme.primary : null,
+      ),
     );
   }
 }

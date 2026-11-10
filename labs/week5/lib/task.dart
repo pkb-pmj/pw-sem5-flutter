@@ -1,9 +1,14 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:labs_week5/pokemon.dart';
+
+final url = Uri.parse('https://pokeapi.co/api/v2/pokemon?limit=100');
 
 Future<Pokemon> loadPokemonSlow() async {
   // - Fetch pokémon entries from https://pokeapi.co/api/v2/pokemon?limit=100.
@@ -12,26 +17,72 @@ Future<Pokemon> loadPokemonSlow() async {
   // - Fetch the selected pokémon from its entry's url.
   // - Parse the response using Pokemon.fromJson and return it.
   final dio = Dio();
-  final response1 = await dio.get<Map<String, dynamic>>(
-    'https://pokeapi.co/api/v2/pokemon?limit=100',
-  );
-  final pokemons = Pokemons.fromJson(response1.data!);
-
-  final pokemon = pokemons.pokemons[Random().nextInt(pokemons.pokemons.length)];
-
-  final response2 = await dio.get<Map<String, dynamic>>(pokemon.url);
-  return Pokemon.fromJson(response2.data!);
+  final pokemons = Pokemons.fromJson(await _getJson(dio, url));
+  final random = pokemons.pokemons[Random().nextInt(pokemons.pokemons.length)];
+  return Pokemon.fromJson(await _getJson(dio, Uri.parse(random.url)));
 }
 
-Future<Pokemon> loadPokemonFastAndEasy() async {
-  return await compute((_) => loadPokemonSlow(), null);
+Future<Map<String, dynamic>> _getJson(Dio dio, Uri uri) async {
+  final response = await dio.getUri<Map<String, dynamic>>(uri);
+  return switch (response.data) {
+    final json? => json,
+    null => throw FormatException('Empty response from $uri'),
+  };
+}
+
+// Alternatively, with `dart:io`
+Future<Pokemon> loadDataIOHttp() async {
+  final client = HttpClient();
+  try {
+    final pokemonsReq = await client.getUrl(url);
+    final pokemonsRes = await pokemonsReq.close();
+
+    final pokemonsJson = await pokemonsRes
+        .transform(const Utf8Decoder())
+        .join();
+    final pokemons = Pokemons.fromJson(
+      jsonDecode(pokemonsJson) as Map<String, dynamic>,
+    );
+
+    final random =
+        pokemons.pokemons[Random().nextInt(pokemons.pokemons.length)];
+    final pokemonReq = await client.getUrl(Uri.parse(random.url));
+    final pokemonRes = await pokemonReq.close();
+    final pokemonJson = await pokemonRes.transform(const Utf8Decoder()).join();
+    return Pokemon.fromJson(jsonDecode(pokemonJson) as Map<String, dynamic>);
+  } finally {
+    client.close();
+  }
+}
+
+// Alternatively, with `package:http`
+Future<Pokemon> loadDataHttpPackage() async {
+  final pokemonsRes = await http.get(url);
+  final pokemons = Pokemons.fromJson(
+    jsonDecode(pokemonsRes.body) as Map<String, dynamic>,
+  );
+
+  final random = pokemons.pokemons[Random().nextInt(pokemons.pokemons.length)];
+  final pokemonRes = await http.get(Uri.parse(random.url));
+  return Pokemon.fromJson(jsonDecode(pokemonRes.body) as Map<String, dynamic>);
+}
+
+Future<Pokemon> loadPokemonFastAndEasy() {
+  // Now, do the same but make it so that the spinner does not hang
+  return compute((_) => loadPokemonSlow(), null);
 }
 
 Future<Pokemon> loadPokemonFastAndComplex() async {
-  final controlPort = ReceivePort();
-  await Isolate.spawn(
-    (sendPort) async => sendPort.send(await loadPokemonSlow()),
-    controlPort.sendPort,
-  );
-  return await controlPort.asBroadcastStream().first as Pokemon;
+  // And now, make the same thing as in `loadPokemonFastAndEasy` but with raw Isolates
+  final receivePort = ReceivePort();
+  await Isolate.spawn((sendPort) async {
+    final pokemon = await loadPokemonSlow();
+    sendPort.send(pokemon);
+  }, receivePort.sendPort);
+
+  try {
+    return await receivePort.first as Pokemon;
+  } finally {
+    receivePort.close();
+  }
 }
