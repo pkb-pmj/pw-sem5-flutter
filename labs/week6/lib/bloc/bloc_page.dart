@@ -1,3 +1,4 @@
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,8 +53,7 @@ class PokemonEvent();
 
 class PokemonBloc() extends Bloc<PokemonEvent, PokemonState> {
   this : super(PokemonStateLoading()) {
-    on<PokemonEvent>(_onLoadRequested);
-    // on<PokemonEvent>(_onLoadRequested, transformer: droppable());
+    on<PokemonEvent>(_onLoadRequested, transformer: droppable());
   }
 
   Future<void> _onLoadRequested(
