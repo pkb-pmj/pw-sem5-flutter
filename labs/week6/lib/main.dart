@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:labs_week6/routes/routes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,7 +51,7 @@ class const HomePage({super.key}) extends StatelessWidget {
   }
 }
 
-final _router = GoRouter(routes: [/* TODO: use generated routes */]);
+final _router = GoRouter(routes: $appRoutes);
 
 class const _PageCard({
   required final String label,
