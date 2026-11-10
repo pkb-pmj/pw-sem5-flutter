@@ -34,14 +34,14 @@ class const HomePage({super.key}) extends StatelessWidget {
             Expanded(
               child: _PageCard(
                 label: 'Cubit',
-                onTap: () => throw UnimplementedError('TODO'),
+                onTap: () => const CubitRoute().go(context),
               ),
             ),
             const SizedBox(height: 16),
             Expanded(
               child: _PageCard(
                 label: 'Bloc',
-                onTap: () => throw UnimplementedError('TODO'),
+                onTap: () => const BlocRoute().go(context),
               ),
             ),
           ],

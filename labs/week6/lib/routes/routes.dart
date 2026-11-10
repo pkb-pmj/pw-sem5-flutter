@@ -15,6 +15,8 @@ library;
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:labs_week6/bloc/bloc_page.dart';
+import 'package:labs_week6/cubit/cubit_page.dart';
 import 'package:labs_week6/main.dart';
 
 part 'routes.g.dart';
@@ -22,11 +24,21 @@ part 'routes.g.dart';
 @TypedGoRoute<HomeRoute>(
   path: '/',
   routes: [
-    // TypedGoRoute(path: '/bloc'),
-    // TypedGoRoute(path: '/cubit'),
+    TypedGoRoute<BlocRoute>(path: '/bloc'),
+    TypedGoRoute<CubitRoute>(path: '/cubit'),
   ],
 )
 class const HomeRoute() extends GoRouteData with $HomeRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => const HomePage();
+}
+
+class const BlocRoute() extends GoRouteData with $BlocRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const BlocPage();
+}
+
+class const CubitRoute() extends GoRouteData with $CubitRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const CubitPage();
 }
