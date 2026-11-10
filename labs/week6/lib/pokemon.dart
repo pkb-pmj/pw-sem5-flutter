@@ -10,21 +10,38 @@
 ///    https://pub.dev/packages/equatable
 library;
 
+import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'pokemon.g.dart';
+
+@JsonSerializable(createJsonSchema: true)
 class const Pokemons({
   // This field is called `results` in the JSON.
-  required final List<PokemonEntry> pokemons,
+  @JsonKey(name: 'results') required final List<PokemonEntry> pokemons,
   required final int count,
-});
+}) with Equatable {
+  @override
+  List<Object?> get props => [pokemons, count];
+}
 
+@JsonSerializable(createJsonSchema: true)
 class const PokemonEntry({
   required final String name,
   required final String url,
-});
+}) with Equatable {
+  @override
+  List<Object?> get props => [name, url];
+}
 
+@JsonSerializable(createJsonSchema: true)
 class const Pokemon({
   required final int id,
   required final String name,
   required final int baseExperience,
   required final int height,
   required final int weight,
-});
+}) with Equatable {
+  @override
+  List<Object?> get props => [id, name, baseExperience, height, weight];
+}
