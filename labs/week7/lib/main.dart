@@ -1,5 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:labs_week7/app.dart';
+import 'package:labs_week7/firebase_options.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,8 +15,9 @@ class const _App({required final Widget child}) extends StatefulWidget {
 }
 
 class _AppState() extends State<_App> {
-  // TODO: initialize Firebase here
-  // final _initialization = ...;
+  final _initialization = Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +30,7 @@ class _AppState() extends State<_App> {
         ),
       ),
       home: FutureBuilder(
-        // TODO: connect the initialization future here
-        future: .value(),
+        future: _initialization,
         builder: (context, snapshot) {
           return switch (snapshot.connectionState) {
             .done => widget.child,
