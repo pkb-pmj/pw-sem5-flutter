@@ -8,22 +8,23 @@ enum SignInResult() {
   success,
 }
 
-class AuthService(/* TODO: depend on FirebaseAuth */) {
-  bool get isSignedIn => false;
+class AuthService(final FirebaseAuth auth) {
+  bool get isSignedIn => auth.currentUser != null;
 
-  // TODO: implement using auth
-  Stream<bool> get isSignedInStream => const .empty();
+  Stream<bool> get isSignedInStream =>
+      auth.authStateChanges().map((user) => user != null);
 
-  // TODO: implement using auth
-  String get userEmail => throw UnimplementedError();
+  String get userEmail => currentUser!.email!;
 
-  // TODO: implement using auth
-  User? get currentUser => throw UnimplementedError();
+  User? get currentUser => auth.currentUser;
 
   Future<SignInResult> signInWithEmail(String email, String password) async {
     try {
-      // TODO: implement using auth
-      throw UnimplementedError();
+      if (isSignedIn) {
+        await auth.signOut();
+      }
+      await auth.signInWithEmailAndPassword(email: email, password: password);
+      return .success;
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'invalid-email':
@@ -42,15 +43,17 @@ class AuthService(/* TODO: depend on FirebaseAuth */) {
 
   Future<bool> signUpWithEmail(String email, String password) async {
     try {
-      // TODO: implement using auth
-      throw UnimplementedError();
+      await auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return true;
     } on FirebaseAuthException {
       return false;
     }
   }
 
   Future<void> signOut() {
-    // TODO: implement using auth
-    throw UnimplementedError();
+    return auth.signOut();
   }
 }
