@@ -31,5 +31,17 @@
         ]
       }
     ]
+  },
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "flutter-test-5224f",
+          "configurations": {
+            "web": "1:1068377669780:web:8c6a7ee825b370e6087481"
+          }
+        }
+      }
+    }
   }
 }
